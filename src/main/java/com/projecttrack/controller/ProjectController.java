@@ -1,30 +1,36 @@
 package com.projecttrack.controller;
 
 import com.projecttrack.model.Project;
-import com.projecttrack.repository.ProjectRepository;
+import com.projecttrack.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/projects")
-@CrossOrigin(origins = "http://localhost:3000") // Allow frontend to access backend
+@RequestMapping("/projects")
 public class ProjectController {
 
     @Autowired
-    private ProjectRepository projectRepository;
+    private ProjectService projectService;
 
-    // Fetch all projects
     @GetMapping
     public List<Project> getAllProjects() {
-        return projectRepository.findAll();
+        return projectService.getAllProjects();
     }
 
-    // Fetch a specific project by ID
-    @GetMapping("/{id}")
-    public Project getProjectById(@PathVariable Long id) {
-        return projectRepository.findById(id).orElse(null);
+    @PostMapping
+    public Project addProject(@RequestBody Project project) {
+        return projectService.addProject(project);
+    }
+
+    @GetMapping("/year/{year}")
+    public List<Project> getProjectsByYear(@PathVariable int year) {
+        return projectService.getProjectsByYear(year);
+    }
+
+    @GetMapping("/type/{type}")
+    public List<Project> getProjectsByType(@PathVariable String type) {
+        return projectService.getProjectsByType(type);
     }
 }
