@@ -1,9 +1,13 @@
 package com.projecttrack.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+
 import com.projecttrack.DTO.LoginRequest;
 import com.projecttrack.DTO.SignupRequest;
 import com.projecttrack.model.User;
 import com.projecttrack.repository.UserRepository;
+import com.projecttrack.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,10 +15,11 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:3000") // frontend URL
+@CrossOrigin(origins = "http://localhost:5173") // frontend URL
 public class UserController {
 
-    private static final String SECRET_ADMIN_KEY = "PICT9876";
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private UserRepository userRepository;
@@ -27,25 +32,24 @@ public class UserController {
             return "Email already exists";
         }
 
-        if ("admin".equalsIgnoreCase(request.getRole())) {
-            if (!SECRET_ADMIN_KEY.equals(request.getAdminKey())) {
-                return "Invalid Admin Key";
-            }
+        User user = new User(request.getEmail(), request.getPassword(), request.getRole());
+        try {
+            userService.registerUser(user, request.getAdminKey());
+        } catch (IllegalArgumentException e) {
+            return e.getMessage(); // "Invalid Admin Key!"
         }
 
-        User newUser = new User(request.getEmail(), request.getPassword(), request.getRole());
-        userRepository.save(newUser);
-        return "Signup successful as " + request.getRole();
+        return "Signup successful as " + user.getRole();
     }
 
-    // Login API
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         Optional<User> user = userRepository.findByEmail(request.getEmail());
         if (user.isPresent() && user.get().getPassword().equals(request.getPassword())) {
-            return "Login successful as " + user.get().getRole();
+            return ResponseEntity.ok(user.get()); // ✅ send full user data
         } else {
-            return "Invalid email or password";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         }
     }
+
 }

@@ -31,10 +31,21 @@ public class ProjectController {
         return projectService.getAllProjects();
     }
 
-    @GetMapping("/check")
-    public String test() {
-        return "CHECK";
+    @GetMapping("/filter")
+    public List<Project> filterProjects(
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String department
+    ) {
+        Department dept = null;
+        if (department != null) {
+            dept = departmentService.getOrCreateByName(department);
+        }
+
+        return projectService.getProjectsByFilters(year, type, dept);
     }
+
+
 
     @PostMapping
     public Project addProject(@RequestBody Project project) {

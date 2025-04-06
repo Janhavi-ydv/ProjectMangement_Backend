@@ -1,8 +1,11 @@
 package com.projecttrack.service;
 
+import com.projecttrack.model.Department;
 import com.projecttrack.model.Project;
 import com.projecttrack.repository.ProjectRepository;
+import com.projecttrack.specs.ProjectSpecifications;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,7 +17,6 @@ public class ProjectService {
     private ProjectRepository projectRepository;
 
     public List<Project> getAllProjects() {
-
         return projectRepository.findAll();
     }
 
@@ -28,5 +30,18 @@ public class ProjectService {
 
     public List<Project> getProjectsByType(String type) {
         return projectRepository.findByProjectType(type);
+    }
+
+    public List<Project> getProjectsByYearTypeAndDepartment(int year, String type, Department department) {
+        return projectRepository.findByYearAndProjectTypeAndDepartment(year, type, department);
+    }
+
+    // 🔥 New Method: Dynamic Filtering with Optional Parameters
+    public List<Project> getProjectsByFilters(Integer year, String type, Department department) {
+        Specification<Project> spec = Specification.where(ProjectSpecifications.hasYear(year))
+                .and(ProjectSpecifications.hasType(type))
+                .and(ProjectSpecifications.hasDepartment(department));
+
+        return projectRepository.findAll(spec);
     }
 }
