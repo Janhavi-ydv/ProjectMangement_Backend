@@ -37,11 +37,13 @@ public class ProjectService {
     }
 
     // 🔥 New Method: Dynamic Filtering with Optional Parameters
-    public List<Project> getProjectsByFilters(Integer year, String type, Department department) {
+    public List<Project> getProjectsByFilters(Integer year, String type, Department department, String domain) {
         Specification<Project> spec = Specification.where(ProjectSpecifications.hasYear(year))
                 .and(ProjectSpecifications.hasType(type))
-                .and(ProjectSpecifications.hasDepartment(department));
+                .and(ProjectSpecifications.hasDepartment(department))
+                .and(ProjectSpecifications.hasDomain(domain)); // ← add this line
 
         return projectRepository.findAll(spec);
     }
+
 }

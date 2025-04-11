@@ -11,6 +11,7 @@ import com.projecttrack.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -27,7 +28,7 @@ public class UserController {
     // Signup API
     @PostMapping("/signup")
     public String signup(@RequestBody SignupRequest request) {
-        Optional<User> existing = userRepository.findByEmail(request.getEmail());
+        Optional<User> existing = userRepository.findByEmailAndRole(request.getEmail(),request.getRole());
         if (existing.isPresent()) {
             return "Email already exists";
         }
@@ -44,12 +45,26 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        Optional<User> user = userRepository.findByEmail(request.getEmail());
+        Optional<User> user = userRepository.findByEmailAndRole(request.getEmail(), request.getRole());
+
         if (user.isPresent() && user.get().getPassword().equals(request.getPassword())) {
-            return ResponseEntity.ok(user.get()); // ✅ send full user data
+            String role = user.get().getRole();
+
+            String redirectUrl = "";
+            if ("Admin".equalsIgnoreCase(request.getRole())) {
+                redirectUrl = "/admindashboard";
+            } else if ("Student".equalsIgnoreCase(request.getRole())) {
+                redirectUrl = "/Home";
+            }
+
+            return ResponseEntity.ok(Map.of(
+                    "user", user.get(),
+                    "redirect", redirectUrl
+            ));
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email, password or role");
         }
     }
+
 
 }

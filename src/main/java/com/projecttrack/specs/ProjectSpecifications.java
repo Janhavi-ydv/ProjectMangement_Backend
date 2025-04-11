@@ -20,4 +20,9 @@ public class ProjectSpecifications {
         return (root, query, cb) ->
                 department == null ? null : cb.equal(root.get("department"), department);
     }
+    public static Specification<Project> hasDomain(String domain) {
+        return (root, query, criteriaBuilder) ->
+                domain == null ? null : criteriaBuilder.equal(criteriaBuilder.lower(root.get("domain")), domain.toLowerCase());
+    }
+
 }

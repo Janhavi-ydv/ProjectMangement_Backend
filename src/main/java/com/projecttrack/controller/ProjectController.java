@@ -35,15 +35,17 @@ public class ProjectController {
     public List<Project> filterProjects(
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) String type,
-            @RequestParam(required = false) String department
+            @RequestParam(required = false) String department,
+            @RequestParam(required = false) String domain // ← new param
     ) {
         Department dept = null;
         if (department != null) {
             dept = departmentService.getOrCreateByName(department);
         }
 
-        return projectService.getProjectsByFilters(year, type, dept);
+        return projectService.getProjectsByFilters(year, type, dept, domain);
     }
+
 
 
 
@@ -89,9 +91,9 @@ public class ProjectController {
                 // CSV format: projectName,domain,synopsis
                 if (data.length < 3) continue;
 
-                String projectName = data[0].trim();
-                String domain = data[1].trim();
-                String synopsis = data[2].trim();
+                String projectName = data[0].replaceAll("\"", "").trim();
+                String domain = data[1].replaceAll("\"", "").trim(); // fix for double quotes
+                String synopsis = data[2].replaceAll("\"", "").trim();
 
                 Project project = new Project(projectName, domain, synopsis, year, type, department);
                 projectService.addProject(project);
@@ -99,10 +101,10 @@ public class ProjectController {
 
             return ResponseEntity.ok("CSV Uploaded Successfully!");
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed: " + e.getMessage());
         }
     }
+
 
 }
